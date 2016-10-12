@@ -36,10 +36,11 @@ def RoundToSigFigs( x, sigfigs ):
 
     mantissas *= 10.0**(decimalExponents - omags)
     
-    if ( (type(mantissas) is float or np.issubdtype(mantissas, np.float))
-         and mantissas < 1.0 ):
-        mantissas *= 10.0
-        omags -= 1.0
+    if type(mantissas) is float or np.issctype(np.dtype(mantissas)):
+        if mantissas < 1.0:
+            mantissas *= 10.0
+            omags -= 1.0
+            
     elif np.issubdtype(mantissas, np.ndarray):
         fixmsk = mantissas < 1.0
         mantissas[fixmsk] *= 10.0
@@ -111,10 +112,11 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     omags = np.floor(decimalExponents)
 
     mantissas *= 10.0**(decimalExponents - omags)
-    if ( (type(mantissas) is float or np.issubdtype(mantissas, np.float))
-         and mantissas < 1.0 ):
-        mantissas *= 10.0
-        omags -= 1.0
+    if type(mantissas) is float or np.issctype(np.dtype(mantissas)):
+        if mantissas < 1.0:
+            mantissas *= 10.0
+            omags -= 1.0
+            
     elif np.issubdtype(mantissas, np.ndarray):
         fixmsk = mantissas < 1.0
         mantissas[fixmsk] *= 10.0
