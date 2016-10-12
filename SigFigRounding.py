@@ -30,11 +30,9 @@ def RoundToSigFigs( x, sigfigs ):
 
 
     mantissas, binaryExponents = np.frexp( x )
-    mantissas *= 2.0
-    binaryExponents -= 1
 
     decimalExponents = __logBase10of2 * binaryExponents
-    omags = np.floor(decimalExponents)
+    omags = np.ceil(decimalExponents) - 1.0
 
     mantissas *= 10.0**(decimalExponents - omags)
     
@@ -74,11 +72,9 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
             "ValueWithUncsRounding: all uncs must be real." )
 
     mantissas, binaryExponents = np.frexp( uncs )
-    mantissas *= 2.0
-    binaryExponents -= 1
     
     decimalExponents = __logBase10of2 * binaryExponents
-    omags = np.floor(decimalExponents)
+    omags = np.ceil(decimalExponents) - 1.0
 
     mantissas *= 10.0**(decimalExponents - omags)
 
@@ -113,11 +109,9 @@ def FormatValToSigFigs( x, sigfigs ):
             "FormatValToSigFigs: x must be real." )
 
     mantissa, binaryExponent = np.frexp( x )
-    mantissa *= 2.0
-    binaryExponent -= 1
 
     decimalExponent = __logBase10of2_decim * binaryExponent
-    omag = decim.Decimal(int(math.floor(decimalExponent)))
+    omag = decim.Decimal(int(math.ceil(decimalExponent)) - 1)
 
     mantissa = decim.Decimal(mantissa) * 10**(decimalExponent - omag)
 
@@ -154,11 +148,9 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
             "FormatValWithUncRounding: unc must be real." )
 
     mantissa, binaryExponent = np.frexp( unc )
-    mantissa *= 2.0
-    binaryExponent -= 1
     
     decimalExponent = __logBase10of2_decim * binaryExponent
-    uncomag = int(math.floor(decimalExponent))
+    uncomag = int(math.ceil(decimalExponent)) - 1
     scale = decim.Decimal(10)**uncomag
 
     mantissa = decim.Decimal(mantissa) * 10**(decimalExponent - uncomag)
