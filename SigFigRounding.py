@@ -9,6 +9,7 @@ __logBase10of2 = float(__logBase10of2_decim)
 
 
 import numpy as np
+__logBase10ofe = 1.0 / np.log(10.0)
 
 def RoundToSigFigs( x, sigfigs ):
     """
@@ -28,14 +29,47 @@ def RoundToSigFigs( x, sigfigs ):
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs: all x must be real." )
 
-
     mantissas, binaryExponents = np.frexp( x )
-
+    
     decimalExponents = __logBase10of2 * binaryExponents
-    omags = np.ceil(decimalExponents) - 1.0
+    omags = np.floor(decimalExponents)
 
     mantissas *= 10.0**(decimalExponents - omags)
     
+    if ( (type(mantissas) is float or np.issubdtype(mantissas, np.float))
+         and mantissas < 1.0 ):
+        mantissas *= 10.0
+        omags -= 1.0
+    elif np.issubdtype(mantissas, np.ndarray):
+        fixmsk = mantissas < 1.0
+        mantissas[fixmsk] *= 10.0
+        omags[fixmsk] -= 1.0
+    
+    return np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+
+
+def RoundToSigFigs_log10( x, sigfigs ):
+    """
+    Rounds the value(s) in x to the number of significant figures in sigfigs.
+    Return value has the same type as x. Uses logarithm function, so will be
+    slower.
+
+    Restrictions:
+    sigfigs must be an integer type and store a positive value.
+    x must be a real value or an array like object containing only real values.
+    """
+    if not ( type(sigfigs) is int or np.issubdtype(sigfigs, np.integer)):
+        raise TypeError( "RoundToSigFigs_log10: sigfigs must be an integer." )
+
+    if sigfigs <= 0:
+        raise ValueError( "RoundToSigFigs_log10: sigfigs must be positive." )
+    
+    if not np.all(np.isreal( x )):
+        raise TypeError( "RoundToSigFigs_log10: all x must be real." )
+
+    log10x = np.log(x) * __logBase10ofe
+    omags = np.floor(log10x)
+    mantissas = x * 10**-omags
     return np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
 
 
@@ -74,9 +108,17 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     mantissas, binaryExponents = np.frexp( uncs )
     
     decimalExponents = __logBase10of2 * binaryExponents
-    omags = np.ceil(decimalExponents) - 1.0
+    omags = np.floor(decimalExponents)
 
     mantissas *= 10.0**(decimalExponents - omags)
+    if ( (type(mantissas) is float or np.issubdtype(mantissas, np.float))
+         and mantissas < 1.0 ):
+        mantissas *= 10.0
+        omags -= 1.0
+    elif np.issubdtype(mantissas, np.ndarray):
+        fixmsk = mantissas < 1.0
+        mantissas[fixmsk] *= 10.0
+        omags[fixmsk] -= 1.0
 
     scales = 10.0**omags
 
@@ -111,9 +153,12 @@ def FormatValToSigFigs( x, sigfigs ):
     mantissa, binaryExponent = np.frexp( x )
 
     decimalExponent = __logBase10of2_decim * binaryExponent
-    omag = decim.Decimal(int(math.ceil(decimalExponent)) - 1)
+    omag = decim.Decimal(int(math.floor(decimalExponent)))
 
     mantissa = decim.Decimal(mantissa) * 10**(decimalExponent - omag)
+    if not mantissa.is_nan() and mantissa < 1.0:
+        mantissa *= decim.Decimal(10.0)
+        omag -= decim.Decimal(1.0)
 
     return str( mantissa.quantize( decim.Decimal(10)**(1 - sigfigs) )
                 * 10**omag )
@@ -150,10 +195,13 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
     mantissa, binaryExponent = np.frexp( unc )
     
     decimalExponent = __logBase10of2_decim * binaryExponent
-    uncomag = int(math.ceil(decimalExponent)) - 1
+    uncomag = int(math.floor(decimalExponent))
     scale = decim.Decimal(10)**uncomag
 
     mantissa = decim.Decimal(mantissa) * 10**(decimalExponent - uncomag)
+    if not mantissa.is_nan() and mantissa < 1.0:
+        mantissa *= decim.Decimal(10.0)
+        uncomag -= decim.Decimal(1.0)
     
     quantscale = decim.Decimal(10)**( 1 - uncsigfigs )
     outVal = decim.Decimal(x) / scale
