@@ -5,8 +5,7 @@ import decimal as decim
 decim.getcontext().prec = 64
 # __logBase10of2 = 3.010299956639811952137388947244930267681898814621085413104274611e-1
 __logBase10of2_decim = decim.Decimal(2).log10()
-de
-__logBase10of2 = float(x)
+__logBase10of2 = float(__logBase10of2_decim)
 
 
 import numpy as np
@@ -31,8 +30,8 @@ def RoundToSigFigs( x, sigfigs ):
 
 
     mantissas, binaryExponents = np.frexp( x )
-    mantissa *= 2.0
-    binaryExponent -= 1
+    mantissas *= 2.0
+    binaryExponents -= 1
 
     decimalExponents = __logBase10of2 * binaryExponents
     omags = np.floor(decimalExponents)
@@ -75,8 +74,8 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
             "ValueWithUncsRounding: all uncs must be real." )
 
     mantissas, binaryExponents = np.frexp( uncs )
-    mantissa *= 2.0
-    binaryExponent -= 1
+    mantissas *= 2.0
+    binaryExponents -= 1
     
     decimalExponents = __logBase10of2 * binaryExponents
     omags = np.floor(decimalExponents)
