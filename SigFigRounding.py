@@ -1,4 +1,4 @@
-#Library to implement significant figure rounding in using numpy functions
+#Library to implement significant figure rounding using numpy functions
 
 #The following constant was computed in maxima 5.35.1 using 64 bigfloat digits of precision
 import decimal as decim
@@ -28,8 +28,10 @@ def RoundToSigFigs( x, sigfigs ):
     
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs: all x must be real." )
-
-    mantissas, binaryExponents = np.frexp( x )
+    
+    xsgn = np.sign(x)
+    absx = xsgn * x
+    mantissas, binaryExponents = np.frexp( absx )
     
     decimalExponents = __logBase10of2 * binaryExponents
     omags = np.floor(decimalExponents)
@@ -46,7 +48,7 @@ def RoundToSigFigs( x, sigfigs ):
         mantissas[fixmsk] *= 10.0
         omags[fixmsk] -= 1.0
     
-    return np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+    return xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
 
 
 def RoundToSigFigs_log10( x, sigfigs ):
@@ -68,10 +70,17 @@ def RoundToSigFigs_log10( x, sigfigs ):
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs_log10: all x must be real." )
 
-    log10x = np.log(x) * __logBase10ofe
+    xsgn = np.sign(x)
+    print xsgn
+    absx = x * xsgn
+    print absx
+    log10x = np.log(absx) * __logBase10ofe
+    print log10x
     omags = np.floor(log10x)
-    mantissas = x * 10**-omags
-    return np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+    print omags
+    mantissas = absx * 10**-omags
+    print mantissas
+    return xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
 
 
 def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
@@ -105,6 +114,10 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     if not np.all(np.isreal( uncs )):
         raise TypeError(
             "ValueWithUncsRounding: all uncs must be real." )
+
+    if np.any( uncs <= 0 ):
+        raise ValueError(
+            "ValueWithUncsRounding: uncs must all be positive." )
 
     mantissas, binaryExponents = np.frexp( uncs )
     
@@ -152,7 +165,10 @@ def FormatValToSigFigs( x, sigfigs ):
         raise TypeError(
             "FormatValToSigFigs: x must be real." )
 
-    mantissa, binaryExponent = np.frexp( x )
+    xsgn = np.sign(x)
+    absx = xsgn * x
+    xsgn = decim.Decimal(xsgn)
+    mantissa, binaryExponent = np.frexp( absx )
 
     decimalExponent = __logBase10of2_decim * binaryExponent
     omag = decim.Decimal(int(math.floor(decimalExponent)))
@@ -162,7 +178,7 @@ def FormatValToSigFigs( x, sigfigs ):
         mantissa *= decim.Decimal(10.0)
         omag -= decim.Decimal(1.0)
 
-    return str( mantissa.quantize( decim.Decimal(10)**(1 - sigfigs) )
+    return str( (xsgn * mantissa).quantize( decim.Decimal(10)**(1 - sigfigs) )
                 * 10**omag )
 
 
