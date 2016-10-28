@@ -91,15 +91,15 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     type as x and uncs, respectively.
 
     Restrictions:
-    - uncsigfigs must be a positive integer.
+    - uncsigfigs must be a positive integer. 
     
     - x must be a real value or an array like object containing only real
       values.
     - uncs must be a real value or an array like object containing only real
       values.
     """
-    if not ( type(sigfigs) is int or type(sigfigs) is long or
-             isinstance(sigfigs, np.integer) ):
+    if not ( type(uncsigfigs) is int or type(uncsigfigs) is long or
+             isinstance(uncsigfigs, np.integer) ):
         raise TypeError(
             "ValueWithUncsRounding: uncsigfigs must be an integer." )
 
@@ -194,8 +194,8 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
     - x must be a real value or floating point.
     - unc must be a real value or floating point
     """
-    if not ( type(sigfigs) is int or type(sigfigs) is long or
-             isinstance(sigfigs, np.integer) ):
+    if not ( type(uncsigfigs) is int or type(uncsigfigs) is long or
+             isinstance(uncsigfigs, np.integer) ):
         raise TypeError(
             "FormatValWithUncRounding: uncsigfigs must be an integer." )
 
