@@ -20,7 +20,8 @@ def RoundToSigFigs( x, sigfigs ):
     sigfigs must be an integer type and store a positive value.
     x must be a real value or an array like object containing only real values.
     """
-    if not ( type(sigfigs) is int or np.issubdtype(sigfigs, np.integer)):
+    if not ( type(sigfigs) is int or type(sigfigs) is long or
+             isinstance(sigfigs, np.integer) ):
         raise TypeError( "RoundToSigFigs: sigfigs must be an integer." )
 
     if sigfigs <= 0:
@@ -38,12 +39,12 @@ def RoundToSigFigs( x, sigfigs ):
 
     mantissas *= 10.0**(decimalExponents - omags)
     
-    if type(mantissas) is float or np.issctype(np.dtype(mantissas)):
+    if type(mantissas) is float or isinstance(mantissas, np.floating):
         if mantissas < 1.0:
             mantissas *= 10.0
             omags -= 1.0
             
-    elif np.issubdtype(mantissas, np.ndarray):
+    else: #elif np.all(np.isreal( mantissas )):
         fixmsk = mantissas < 1.0
         mantissas[fixmsk] *= 10.0
         omags[fixmsk] -= 1.0
@@ -61,7 +62,8 @@ def RoundToSigFigs_log10( x, sigfigs ):
     sigfigs must be an integer type and store a positive value.
     x must be a real value or an array like object containing only real values.
     """
-    if not ( type(sigfigs) is int or np.issubdtype(sigfigs, np.integer)):
+    if not ( type(sigfigs) is int or type(sigfigs) is long or
+             isinstance(sigfigs, np.integer) ):
         raise TypeError( "RoundToSigFigs_log10: sigfigs must be an integer." )
 
     if sigfigs <= 0:
@@ -71,15 +73,12 @@ def RoundToSigFigs_log10( x, sigfigs ):
         raise TypeError( "RoundToSigFigs_log10: all x must be real." )
 
     xsgn = np.sign(x)
-    print xsgn
     absx = x * xsgn
-    print absx
+    
     log10x = np.log(absx) * __logBase10ofe
-    print log10x
     omags = np.floor(log10x)
-    print omags
     mantissas = absx * 10**-omags
-    print mantissas
+    
     return xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
 
 
@@ -99,7 +98,8 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     - uncs must be a real value or an array like object containing only real
       values.
     """
-    if not ( type(uncsigfigs) is int or np.issubdtype(uncsigfigs, np.integer)):
+    if not ( type(sigfigs) is int or type(sigfigs) is long or
+             isinstance(sigfigs, np.integer) ):
         raise TypeError(
             "ValueWithUncsRounding: uncsigfigs must be an integer." )
 
@@ -130,7 +130,7 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
             mantissas *= 10.0
             omags -= 1.0
             
-    elif np.issubdtype(mantissas, np.ndarray):
+    else: #elif np.all(np.isreal( mantissas )):
         fixmsk = mantissas < 1.0
         mantissas[fixmsk] *= 10.0
         omags[fixmsk] -= 1.0
@@ -194,7 +194,8 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
     - x must be a real value or floating point.
     - unc must be a real value or floating point
     """
-    if not ( type(uncsigfigs) is int or np.issubdtype(uncsigfigs, np.integer) ):
+    if not ( type(sigfigs) is int or type(sigfigs) is long or
+             isinstance(sigfigs, np.integer) ):
         raise TypeError(
             "FormatValWithUncRounding: uncsigfigs must be an integer." )
 
@@ -228,7 +229,8 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
              str(mantissa.quantize(quantscale) * scale) )
 
 def SetDecimalPrecision( precision ):
-    if not ( type(precision) is int or np.issubdtype(precision, np.integer) ):
+    if not ( type(sigfigs) is int or type(sigfigs) is long or
+             isinstance(sigfigs, np.integer) ):
         raise TypeError( "SetDecimalPrecision: prec must be an integer." )
 
     if precision < 0:
