@@ -119,6 +119,10 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
         raise ValueError(
             "ValueWithUncsRounding: uncs must all be positive." )
 
+    #Pre-round unc to correctly handle cases where rounding alters the
+    # most significant digit of unc.
+    uncs = RoundToSigFigs( uncs, uncsigfigs )
+    
     mantissas, binaryExponents = np.frexp( uncs )
     
     decimalExponents = __logBase10of2 * binaryExponents
@@ -167,18 +171,12 @@ def FormatValToSigFigs( x, sigfigs ):
 
     xsgn = np.sign(x)
     absx = xsgn * x
+    log10x = np.log(absx) * __logBase10ofe
+    omag = decim.Decimal(np.floor(log10x))
+    mantissa = decim.Decimal(absx) * 10**(-omag)
     xsgn = decim.Decimal(xsgn)
-    mantissa, binaryExponent = np.frexp( absx )
 
-    decimalExponent = __logBase10of2_decim * binaryExponent
-    omag = decim.Decimal(int(math.floor(decimalExponent)))
-
-    mantissa = decim.Decimal(mantissa) * 10**(decimalExponent - omag)
-    if not mantissa.is_nan() and mantissa < 1.0:
-        mantissa *= decim.Decimal(10.0)
-        omag -= decim.Decimal(1.0)
-
-    return str( (xsgn * mantissa).quantize( decim.Decimal(10)**(1 - sigfigs) )
+    return str( xsgn * mantissa.quantize( decim.Decimal(10)**(1 - sigfigs) )
                 * 10**omag )
 
 
@@ -211,17 +209,21 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
         raise TypeError(
             "FormatValWithUncRounding: unc must be real." )
 
+    #Pre-round unc to correctly handle cases where rounding alters the
+    # most significant digit of unc.
+    unc = RoundToSigFigs( unc, uncsigfigs ) 
+    
     mantissa, binaryExponent = np.frexp( unc )
     
     decimalExponent = __logBase10of2_decim * binaryExponent
     uncomag = int(math.floor(decimalExponent))
-    scale = decim.Decimal(10)**uncomag
 
     mantissa = decim.Decimal(mantissa) * 10**(decimalExponent - uncomag)
     if not mantissa.is_nan() and mantissa < 1.0:
         mantissa *= decim.Decimal(10.0)
         uncomag -= decim.Decimal(1.0)
-    
+
+    scale = decim.Decimal(10)**uncomag
     quantscale = decim.Decimal(10)**( 1 - uncsigfigs )
     outVal = decim.Decimal(x) / scale
     
