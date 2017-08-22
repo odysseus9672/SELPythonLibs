@@ -10,7 +10,6 @@ __logBase10of2 = float(__logBase10of2_decim)
 
 import numpy as np
 __logBase10ofe = 1.0 / np.log(10.0)
-matrixtype = type( np.matrix(np.array([[1.0, 0.0], [0.0, 1.0]])) )
 
 def RoundToSigFigs( x, sigfigs ):
     """
@@ -31,7 +30,9 @@ def RoundToSigFigs( x, sigfigs ):
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs: all x must be real." )
 
+    matrixflag = False
     if isinstance(x, np.matrix): #Convert matrices to arrays
+        matrixflag = True
         x = np.asarray(x)
     
     xsgn = np.sign(x)
@@ -52,8 +53,12 @@ def RoundToSigFigs( x, sigfigs ):
         fixmsk = mantissas < 1.0
         mantissas[fixmsk] *= 10.0
         omags[fixmsk] -= 1.0
+
+    result = xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+    if matrixflag:
+        result = np.matrix(result, copy=False)
     
-    return xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+    return result
 
 
 def RoundToSigFigs_log10( x, sigfigs ):
@@ -76,7 +81,9 @@ def RoundToSigFigs_log10( x, sigfigs ):
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs_log10: all x must be real." )
 
+    matrixflag = False
     if isinstance(x, np.matrix): #Convert matrices to arrays
+        matrixflag = True
         x = np.asarray(x)
 
     xsgn = np.sign(x)
@@ -86,7 +93,11 @@ def RoundToSigFigs_log10( x, sigfigs ):
     omags = np.floor(log10x)
     mantissas = absx * 10**-omags
     
-    return xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+    result = xsgn * np.around( mantissas, decimals=sigfigs - 1 ) * 10.0**omags
+    if matrixflag:
+        result = np.matrix(result, copy=False)
+
+    return result
 
 
 def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
@@ -126,7 +137,9 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
         raise ValueError(
             "ValueWithUncsRounding: uncs must all be positive." )
 
+    matrixflag = False
     if isinstance(x, np.matrix): #Convert matrices to arrays
+        matrixflag = True
         x = np.asarray(x)
 
     #Pre-round unc to correctly handle cases where rounding alters the
@@ -152,8 +165,12 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     scales = 10.0**omags
 
     prec = uncsigfigs - 1
-    return ( np.around( x / scales, decimals=prec ) * scales,
-             np.around( mantissas, decimals=prec ) * scales )
+    result =  ( np.around( x / scales, decimals=prec ) * scales,
+                np.around( mantissas, decimals=prec ) * scales )
+    if matrixflag:
+        result = np.matrix(result, copy=False)
+
+    return result
 
 
 import math
