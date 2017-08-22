@@ -10,6 +10,7 @@ __logBase10of2 = float(__logBase10of2_decim)
 
 import numpy as np
 __logBase10ofe = 1.0 / np.log(10.0)
+matrixtype = type( np.matrix(np.array([[1.0, 0.0], [0.0, 1.0]])) )
 
 def RoundToSigFigs( x, sigfigs ):
     """
@@ -29,6 +30,9 @@ def RoundToSigFigs( x, sigfigs ):
     
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs: all x must be real." )
+
+    if isinstance(x, np.matrix): #Convert matrices to arrays
+        x = np.asarray(x)
     
     xsgn = np.sign(x)
     absx = xsgn * x
@@ -71,6 +75,9 @@ def RoundToSigFigs_log10( x, sigfigs ):
     
     if not np.all(np.isreal( x )):
         raise TypeError( "RoundToSigFigs_log10: all x must be real." )
+
+    if isinstance(x, np.matrix): #Convert matrices to arrays
+        x = np.asarray(x)
 
     xsgn = np.sign(x)
     absx = x * xsgn
@@ -118,6 +125,9 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     if np.any( uncs <= 0 ):
         raise ValueError(
             "ValueWithUncsRounding: uncs must all be positive." )
+
+    if isinstance(x, np.matrix): #Convert matrices to arrays
+        x = np.asarray(x)
 
     #Pre-round unc to correctly handle cases where rounding alters the
     # most significant digit of unc.
@@ -169,6 +179,9 @@ def FormatValToSigFigs( x, sigfigs ):
         raise TypeError(
             "FormatValToSigFigs: x must be real." )
 
+    if isinstance(x, np.matrix): #Convert matrices to arrays
+        x = np.asarray(x)
+
     xsgn = np.sign(x)
     absx = xsgn * x
     log10x = np.log(absx) * __logBase10ofe
@@ -208,6 +221,9 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1 ):
     if not np.isreal(unc):
         raise TypeError(
             "FormatValWithUncRounding: unc must be real." )
+
+    if isinstance(x, np.matrix): #Convert matrices to arrays
+        x = np.asarray(x)
 
     #Pre-round unc to correctly handle cases where rounding alters the
     # most significant digit of unc.
