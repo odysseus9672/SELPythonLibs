@@ -33,9 +33,9 @@
 #            RowMask - a function that takes a row's zero indexed order and
 #                      the row's raw string and returns True if the row is to
 #                      be read in, False if it is to be ignored.
-#            startrow - a long integer specifying the first zero indexed data
+#            startrow - an integer specifying the first zero indexed data
 #                       row/line to be read in.
-#            breakrow - a long integer specifying the last zero indexed data
+#            breakrow - an integer specifying the last zero indexed data
 #                       row/line to be read in.
 #     Row - a convenience function for grabbing all the data in the given
 #           zero indexed row from the columns.
@@ -105,7 +105,7 @@ def IPACtoPythonType( IPACtp ):
     elif IPACtp in ( "i", "int" ):
         return type(int(1))
     elif IPACtp in ( "l", "long" ):
-        return type(long(1L))
+        return type(int(1))
     elif IPACtp in ( "d", "double", "f", "float", "r", "real" ):
         return type( float(1.0) )
     else:
@@ -182,8 +182,8 @@ def MakeParser( valtype, null="null" ):
         default = 1
 
     elif valtype in ( "l", "long" ):
-        baseparse = long
-        default = 1L
+        baseparse = int
+        default = 1
 
     elif valtype in ( "d", "double", "f", "float", "r", "real" ):
         def baseparse( x ):
@@ -222,7 +222,7 @@ def MakeNullParser( valtype, null="null" ):
         default = 1
 
     elif valtype in ( "l", "long" ):
-        default = 1L
+        default = 1
 
     elif valtype in ( "d", "double", "f", "float", "r", "real" ):
         default = 1.0
@@ -290,7 +290,7 @@ class TblRow:
         return None
         
     def __getitem__(self, k):
-        if type(k) in ( type(1), type(1L) ):
+        if type(k) == type(1):
             return ( self.data[k], self.mask[k] )
         elif type(k) == type("a"):
             if k in self.colnames:
@@ -306,7 +306,7 @@ class TblRow:
         return None
 
     def __setitem__( self, k, val ):
-        if type(k) in ( type(1), type(1L) ):
+        if type(k) == type(1):
             if k < len(self.data) and k >= -len(self.data):
                 self.data[k] = val
                 self.mask[k] = True
@@ -333,7 +333,7 @@ class TblRow:
         return None
 
     def __delitem__( self, k ):
-        if type(k) in ( type(1), type(1L) ):
+        if type(k) == type(1):
             if k < len(self.data) and k >= -len(self.data):
                 self.mask[k] = False
 
@@ -354,7 +354,7 @@ class TblRow:
         return None
 
 
-def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
+def ReadTable( fname, RowMask = lambda x, y: True, startrow=0,
                breakrow=None, gzip=False ):
     """Function for reading IPAC tables into a dictionary of Tblcolumns. Will
     only read lines for which the function RowMask returns True when passed
@@ -370,7 +370,8 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
     hdrlines = []
     cnames = []
     while (True):
-        l = f.readline()
+        l = (f.readline()).decode()
+        
         if (l[0] == "\\"):
             hdrlines.append( l.rstrip("\n\r") ) 
         elif (l[0] == "|"):
@@ -386,8 +387,8 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
     # inherent in the spec.
     colnames = [ x.strip(" -") for x in rawcolnames ]
     cols = {}
-    coltypes = [ IPACExpandType( x.strip(" -") )
-                 for x in ((f.readline()).strip("|\n\r")).split("|") ]
+    rawcoltypes = (((f.readline()).decode()).strip("|\n\r")).split("|")
+    coltypes = [ IPACExpandType( x.strip(" -") ) for x in rawcoltypes ]
 
     for n, r, t in zip(colnames, rawcolnames, coltypes):
         newcol = TblCol()
@@ -398,7 +399,7 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
         cols[n] = newcol
 
     pos = f.tell()
-    l = f.readline()
+    l = (f.readline()).decode()
 
     if ( l[0] != "|" ):
         #We've read past the header
@@ -412,7 +413,7 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
             cols[n].units = u.strip( " -" )
 
         pos = f.tell()
-        l = f.readline()
+        l = (f.readline()).decode()
 
         if ( l[0] != "|" ):
             #We've read past the header
@@ -434,9 +435,9 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
         cols[n].Parser = MakeParser( tp, null=nl )
 
     #read past ignored rows
-    if startrow > 0L and gzip == False:
-        f.seek( long(linelen) * long(startrow), os.SEEK_CUR )
-    elif startrow > 0L and gzip == True: #Read past the hard way
+    if startrow > 0 and gzip == False:
+        f.seek( linelen * startrow, os.SEEK_CUR )
+    elif startrow > 0 and gzip == True: #Read past the hard way
         for i in range( startrow ):
             dummy = f.readline()
         del(dummy)
@@ -460,15 +461,16 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
     alldata = [ [] for n in colnames ]
     allmask = [ [] for n in colnames ]
     
-    rownum = long(startrow)
+    rownum = startrow
     for line in f:
+        line = line.decode()
         if breakrow != None and rownum >= breakrow:
             break;
         
         if RowMask(rownum, line) != True:
             continue
 
-        rownum += 1L
+        rownum += 1
         
         parts = [ line[start:end] for start, end in zip( colstarts, colends ) ]
 
@@ -485,7 +487,7 @@ def ReadTable( fname, RowMask = lambda x, y: True, startrow=0L,
     return [ hdrlines, colnames, cols ]
       
 class Tbl:
-    def Read( self, fname, RowMask = lambda x, l: True, startrow=0L,
+    def Read( self, fname, RowMask = lambda x, l: True, startrow=0,
               breakrow=None, gzip=False ):
         """Function for reading IPAC tables into a the Tbl. Will
         only read lines for which the function RowMask returns True for the
@@ -557,29 +559,30 @@ class Tbl:
                 return "|" + "|".join(r) + "|\n"
             
             for l in self.hdr:
-                ofile.write(l + "\n")
+                ofile.write((l + "\n").encode())
 
             l = hdrstrn( self.colnames, colwidths )
-            ofile.write( l )
+            ofile.write( l.encode() )
 
             coltypes = [ self.cols[k].type for k in self.colnames ]
             l = hdrstrn( coltypes, colwidths )
-            ofile.write( l )
+            ofile.write( l.encode() )
 
             units = [ self.cols[k].units for k in self.colnames ]
             l = hdrstrn( units, colwidths )
-            ofile.write( l )
+            ofile.write( l.encode() )
 
             nulls = [ self.cols[k].Stringer( "asdf", False ) \
                       for k in self.colnames ]
             l = hdrstrn( nulls, colwidths )
-            ofile.write( l )
+            ofile.write( l.encode() )
 
         for i in range(len(self.cols[self.colnames[0]])):
             strcols = [ self.cols[n].Stringer(self.cols[n].data[i],
                                               self.cols[n].mask[i])
                         for n in self.colnames ]
-            ofile.write( " " + " ".join( strcols ) + " \n" )
+            l = " " + " ".join( strcols ) + " \n"
+            ofile.write( l.encode() )
             
         return None
 
@@ -599,7 +602,7 @@ class Tbl:
             f = op( fname, "wb" )
             self.__out(f, header=True)
         else:
-            f = op( fname, "a" )
+            f = op( fname, "ab" )
             self.__out(f, header=False)
         
         f.close()
@@ -626,7 +629,7 @@ class BigTbl:
 
         #First read past the comment header
         while True:
-            l = self.infile.readline()
+            l = (self.infile.readline()).decode()
             if l[0] == "\\":
                 self.hdr.append( l.rstrip( "\n\r" ) )
 
@@ -651,9 +654,8 @@ class BigTbl:
         del self.colstarts[-1]
         
         self.colnames = [ n.strip(" -") for n in rawcolnames ]
-        coltypes = [ IPACExpandType( n.strip(" -") )
-                     for n in ((self.infile.readline()
-                                ).strip("|\n\r")).split("|") ]
+        l = (((self.infile.readline()).decode()).strip("|\n\r")).split("|")
+        coltypes = [ IPACExpandType( n.strip(" -") ) for n in l ]
 
         self.__indatstart = self.infile.tell()
 
@@ -661,19 +663,19 @@ class BigTbl:
         units = [ "" for n in self.colnames ]
         nulls = [ "null" for n in self.colnames ]
         
-        l = self.infile.readline()
+        l = (self.infile.readline()).decode()
         if l[0] == "|":
-            units = map( lambda x: x.strip(" -"),
-                         (l.strip("|\n\r")).split( "|" ))
+            units = list(map( lambda x: x.strip(" -"),
+                              (l.strip("|\n\r")).split( "|" )))
             if len(units) != len(self.colnames):
                 raise FormatError( "Header format broken." )
 
             self.__indatstart = self.infile.tell()
 
-            l = self.infile.readline()
+            l = (self.infile.readline()).decode()
             if l[0] == "|":
-                nulls = map( lambda x: x.strip(" -"),
-                             (l.strip("|\n\r")).split( "|" ))
+                nulls = list(map( lambda x: x.strip(" -"),
+                                  (l.strip("|\n\r")).split( "|" )))
                 if len(nulls) != len(self.colnames):
                     raise FormatError( "Header format broken." )
 
@@ -707,7 +709,7 @@ class BigTbl:
     
     def __init__(self, fname="", gzip=False ):
         self.outfile = None
-        self.__currow = 0L
+        self.__currow = 0
         
         if fname == "":
             self.hdr = []
@@ -724,8 +726,8 @@ class BigTbl:
 
             self.outfile = None
             self.infile = None
-            self.__inlinelen = 0L
-            self.__indatstart = 0L
+            self.__inlinelen = 0
+            self.__indatstart = 0
             self.__inputbuffer = []
 
         else:
@@ -734,9 +736,9 @@ class BigTbl:
         return None
 
 
-    def ReadRow( self, rownum=-1L ):
+    def ReadRow( self, rownum=-1 ):
         
-        if self.__currow != rownum and rownum >= 0L:
+        if self.__currow != rownum and rownum >= 0:
             if self.__seekable == True:
                 self.infile.seek( self.__indatstart +
                                   self.__inlinelen * rownum )
@@ -758,7 +760,8 @@ class BigTbl:
             self.__inputbuffer = []
 
         if len( self.__inputbuffer ) == 0:
-            self.__inputbuffer = self.infile.readlines( linebuffersize )
+            self.__inputbuffer = list(map(lambda x: x.decode(),
+                                          self.infile.readlines( linebuffersize )))
 
         #End of file reached, return None
         if len( self.__inputbuffer ) == 0:
@@ -829,7 +832,7 @@ class BigTbl:
 
     def WriteHeader( self ):
         for l in self.hdr:
-            self.outfile.write( l + "\n" )
+            self.outfile.write( l.encode() + "\n" )
         
         hdrstringers = [ MakeStringer( "char", w ) for w in self.colwidths ]
         def hdrstrn( input ):
@@ -839,7 +842,7 @@ class BigTbl:
                 strs = [ input[n] for n in self.colnames ]
                 
             strs = [ S( x, True ) for x, S in zip( strs, hdrstringers )]
-            return( "|" + "|".join( strs ) + "|\n" )
+            return( ("|" + "|".join( strs ) + "|\n").encode() )
 
         self.outfile.write( hdrstrn( self.colnames ) )
         self.outfile.write( hdrstrn( self.types ) )
@@ -879,7 +882,7 @@ class BigTbl:
         parts = [ S( r[0], r[1] )
                   for r, S in zip( outarr, self.stringers ) ]
 
-        self.outfile.write( " " + " ".join( parts ) + " \n" )
+        self.outfile.write( (" " + " ".join( parts ) + " \n").encode() )
 
         return None
 
