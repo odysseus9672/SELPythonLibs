@@ -5,7 +5,7 @@
 
 import math
 #import sys
-from Interpolation import NevilleEvenRound
+from NevInterp import NevilleEvenRound
 
 
 
