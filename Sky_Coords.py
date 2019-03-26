@@ -153,7 +153,7 @@ def Hypot_C3V(vec):
     """Computes the hypotenuse of the 3d vector, vec, using a numerically
     optimal algorithm. The argument, vec, must be an indexable object of
     length 3."""
-    mags = map(abs, vec)
+    mags = list(map(abs, vec))
     mags.sort()
     intermed = 1.0 + (mags[0]/mags[1])**2
     return mags[2] * sqrt(1.0 + intermed * (mags[1]/mags[2])**2)
@@ -478,7 +478,7 @@ def Pick_Orthog_C3V(original, result):
     orthogonal projection along original, and then normalize the projected
     vector. The vector in original must have length 1. All 3d vectors must
     be length 3 indexable ojbects."""
-    mag = map(abs, original)
+    mag = list(map(abs, original))
     smallest = min(mag)
     result[0] = result[1] = result[2] = 0.0
     result[mag.index(smallest)] = 1.0
