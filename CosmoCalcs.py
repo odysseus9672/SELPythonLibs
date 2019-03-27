@@ -36,13 +36,23 @@ _SplineOrder = 3
 
 #Check for cached data
 import os
-import cPickle
+
+if sys.version_info[0] >= 3:
+    long = int
+    import pickle
+    loadcache = lambda f: pickle.load(f, encoding="latin1")
+    dumpcache = lambda dat, f: pickle.dump( dat, f, protocol=2 )
+    
+else:
+    import cPickle
+    loadcache = lambda f: cPickle.load(f)
+    dumpcache = lambda dat, f: cPickle.dump( dat, f, 2 )
 
 if os.path.exists( _FullCacheName ):
     f = open( _FullCacheName, "rb" )
 
     try:
-        _cache = cPickle.load( f )
+        _cache = loadcache( f )
         
     except EOFError: #Delete corrupted file
         os.remove( _FullCacheName )
@@ -54,7 +64,7 @@ else:
 
 def WriteCaches( outfilename=_FullCacheName ):
     f = open( outfilename, "wb" )
-    cPickle.dump( _cache, f, cPickle.HIGHEST_PROTOCOL )
+    dumpcache( _cache, f, cPickle.HIGHEST_PROTOCOL )
 
     f.close()
     return None
@@ -386,7 +396,7 @@ class Universe:
             lambda x: expm1( self.lowz_BasetLSpline( log1p(x) ) ) )
         
         def Dc(z, UseSpline=True, epsrel=epsrel):
-            if ( type(z) in ( type( 0.0 ), type( 0 ), type( 1L ),
+            if ( type(z) in ( type( 0.0 ), type( 0 ), long,
                               type( float64( 1.0 ) ), type( float32( 1.0 ) ) )
                  and UseSpline == True ):
                 if z <= -1.0:
@@ -485,7 +495,7 @@ class Universe:
 
         #Lookback time
         def tL(z, UseSpline=True, epsrel=epsrel):
-            if ( type(z) in ( type( 0.0 ), type( 0 ), type( 1L ),
+            if ( type(z) in ( type( 0.0 ), type( 0 ), long,
                               float16, float32, float64 ) ):
                 if z <= -1.0:
                     sys.stderr.write( _zwarning )
@@ -1127,7 +1137,7 @@ class cUniverse:
 
 
     def tL0(self, z, UseSpline=True, epsrel=1e-6):
-        if type(z) not in (type(0), type(1L), type(float(1.0)),
+        if type(z) not in (type(0), long, type(float(1.0)),
                            float16, float32, float64):
             z = z[0]
             
@@ -1141,7 +1151,7 @@ class cUniverse:
                                ctp.byref(unc) )
     
     def tL(self, z, UseSpline=True, epsrel=1e-6):
-        if type(z) not in (type(0), type(1L), type(float(1.0)),
+        if type(z) not in (type(0), long, type(float(1.0)),
                            float16, float32, float64):
             z = z[0]
             
