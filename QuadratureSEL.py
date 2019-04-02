@@ -1,13 +1,14 @@
 # Libary that supplies numerical integration routines for higher dimensional
-# spaces. The "Simple" functions are basically the trapezoid rule, and the 
-# "Romberg" functions use the Romberg algorithm to extrapolate to higher 
-# orders than the trapezoid rule.
+#spaces
 
 import math
-#import sys
+import sys
 from NevInterp import NevilleEvenRound
 
-
+								
+if sys.version_info[0] >= 3:
+    from functools import reduce
+    xrange = range
 
 class BugError(Exception):
 	def __init__(self, value):
@@ -105,7 +106,7 @@ def Romberg3dO1( fun ):
 		estimates.extend( cur_ests )
 		scales.extend( [ 1.0 / (x*x*x) for x in s ] )
 
-	sortinglist = zip( scales, estimates )
+	sortinglist = list(zip( scales, estimates ))
 	sortinglist.sort( key= lambda x: x[0] )
 	scales, estimates = zip( *sortinglist )
 	#print(funcalls)
@@ -225,7 +226,7 @@ def Romberg3dO3( fun ):
 	#print( scales )
 	#print( estimates )
 
-	sortinglist = zip( scales, estimates )
+	sortinglist = list(zip( scales, estimates ))
 	sortinglist.sort( key= lambda x: x[0] )
 	scales, estimates = zip( *sortinglist )
 	print(funcalls)
@@ -520,7 +521,7 @@ def Romberg2dO1( fun, coarsedivs=( (4,4), (5,5) ), addlevels=( 3, 3 ) ):
 
 			estimates.append( 0.25 * estimates[-1] + curest )
 
-	sortinglist = zip( unitareas, estimates )
+	sortinglist = list(zip( unitareas, estimates ))
 	sortinglist.sort( key= lambda x: x[0] )
 	unitareas, estimates = zip( *sortinglist )
 
@@ -604,8 +605,9 @@ def Romberg1dO1( fun, coarsedivs=( 4, 5 ), addlevels=( 3, 3 ) ):
 
 			estimates.append( 0.5 * estimates[-1] + curest )
 
-	sortinglist = zip( unitlens, estimates )
+	sortinglist = list(zip( unitlens, estimates ))
 	sortinglist.sort( key= lambda x: x[0] )
 	unitlens, estimates = zip( *sortinglist )
 
 	return NevilleEvenRound( unitlens, estimates, 0.0 )
+

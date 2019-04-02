@@ -19,6 +19,9 @@
 # face of divergence of the algorithm.
 
 import math
+import sys
+if sys.version_info[0] >= 3:
+    from functools import reduce
 
 
 def NevilleEven( inxvals, inyvals, xeval ):
@@ -123,7 +126,7 @@ def NevilleEvenRound( inxvals, inyvals, xeval ):
 	n = len( xvals )
 
 	#Sort on distance from xeval to put the optimal extrapolation at 0
-	sortArr = zip( [ abs(x - xeval) for x in xvals ], xvals, lastyvals )
+	sortArr = list(zip( [ abs(x - xeval) for x in xvals ], xvals, lastyvals ))
 	sortArr.sort( key=lambda x: x[0] )
 	b, xvals, lastyvals = zip( *sortArr )
 
@@ -194,7 +197,7 @@ def NevilleRound( inxvals, inyvals, xeval ):
 	n = len( xvals )
 
 	#Sort on distance from xeval to put the optimal extrapolation at 0
-	sortArr = zip( [ abs(x - xeval) for x in xvals ], xvals, lastyvals )
+	sortArr = list(zip( [ abs(x - xeval) for x in xvals ], xvals, lastyvals ))
 	sortArr.sort( key=lambda x: x[0] )
 	b, xvals, lastyvals = zip( *sortArr )
 

@@ -64,7 +64,7 @@ else:
 
 def WriteCaches( outfilename=_FullCacheName ):
     f = open( outfilename, "wb" )
-    dumpcache( _cache, f, cPickle.HIGHEST_PROTOCOL )
+    dumpcache( _cache, f )
 
     f.close()
     return None
