@@ -26,7 +26,7 @@ do
 	    unset IFS
 	    if [[ ${versionarr[0]} -ge 18 ]]; then
 	        #export CFLAGS0=$CFLAGS0" -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include"
-	        export CFLAGS0="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+	        export CFLAGS0="-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk "$CFLAGS0
 	    fi
 	    
 	    export CFLAGS0=$CFLAGS0" -O3"
