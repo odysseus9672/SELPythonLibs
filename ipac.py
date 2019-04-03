@@ -57,8 +57,10 @@ import gzip as gz
 if sys.version_info[0] >= 3:
     long = int
     decode = lambda x: x.decode()
+    encode = lambda x: bytes(x, "ascii")
 else:
     decode = lambda x: x
+    encode = lambda x: x
 
 
 class FormatError(Exception):
@@ -565,29 +567,29 @@ class Tbl:
                 return "|" + "|".join(r) + "|\n"
             
             for l in self.hdr:
-                ofile.write(l + "\n")
+                ofile.write(encode(l + "\n"))
 
             l = hdrstrn( self.colnames, colwidths )
-            ofile.write( l )
+            ofile.write(encode( l ))
 
             coltypes = [ self.cols[k].type for k in self.colnames ]
             l = hdrstrn( coltypes, colwidths )
-            ofile.write( l )
+            ofile.write(encode( l ))
 
             units = [ self.cols[k].units for k in self.colnames ]
             l = hdrstrn( units, colwidths )
-            ofile.write( l )
+            ofile.write(encode( l ))
 
             nulls = [ self.cols[k].Stringer( "asdf", False ) \
                       for k in self.colnames ]
             l = hdrstrn( nulls, colwidths )
-            ofile.write( l )
+            ofile.write(encode( l ))
 
         for i in range(len(self.cols[self.colnames[0]])):
             strcols = [ self.cols[n].Stringer(self.cols[n].data[i],
                                               self.cols[n].mask[i])
                         for n in self.colnames ]
-            ofile.write( " " + " ".join( strcols ) + " \n" )
+            ofile.write(encode( " " + " ".join( strcols ) + " \n" ))
             
         return None
 
@@ -836,7 +838,7 @@ class BigTbl:
 
     def WriteHeader( self ):
         for l in self.hdr:
-            self.outfile.write( l + "\n" )
+            self.outfile.write(encode( l + "\n" ))
         
         hdrstringers = [ MakeStringer( "char", w ) for w in self.colwidths ]
         def hdrstrn( input ):
@@ -848,10 +850,10 @@ class BigTbl:
             strs = [ S( x, True ) for x, S in zip( strs, hdrstringers )]
             return( "|" + "|".join( strs ) + "|\n" )
 
-        self.outfile.write( hdrstrn( self.colnames ) )
-        self.outfile.write( hdrstrn( self.types ) )
-        self.outfile.write( hdrstrn( self.units ) )
-        self.outfile.write( hdrstrn( self.nulls ) )
+        self.outfile.write(encode( hdrstrn( self.colnames ) ))
+        self.outfile.write(encode( hdrstrn( self.types ) ))
+        self.outfile.write(encode( hdrstrn( self.units ) ))
+        self.outfile.write(encode( hdrstrn( self.nulls ) ))
 
         return None
 
@@ -886,7 +888,7 @@ class BigTbl:
         parts = [ S( r[0], r[1] )
                   for r, S in zip( outarr, self.stringers ) ]
 
-        self.outfile.write( " " + " ".join( parts ) + " \n" )
+        self.outfile.write(encode( " " + " ".join( parts ) + " \n" ))
 
         return None
 
