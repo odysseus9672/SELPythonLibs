@@ -897,3 +897,49 @@ class BigTbl:
         self.CloseWrite()
 
         return None
+
+
+try:
+    import numpy as np
+
+    def arrayize_cols( tbl ):
+        for c in tbl.colnames:
+            tbl.cols[c].data = np.asarray(tbl.cols[c].data)
+            tbl.cols[c].mask = np.asarray(tbl.cols[c].mask)
+
+        return None
+
+except ModuleNotFoundError:
+    sys.stderr.write("Warning: numpy not found - ipac array features disabled.")
+
+
+try:
+    import pandas as pd
+
+    
+    def tbl_to_DFrame( tbl ):
+        typedict = { "i": "Int64", "int": "Int64", \
+                         "l": "Int64", "long": "Int64", \
+                         "f": "float64", "float": "float64", \
+                         "d": "float64", "double": "float64", \
+                         "r": "float64", "real": "float64", \
+                         "c": "str", "char": "str" }
+        df = pd.DataFrame()
+        for n in tbl.colnames:
+            col = tbl.cols[n]
+            dat = col.data
+
+            if col.type not in ( "t", "date" ):
+                dat = pd.array(col.data, dtype=typedict[col.type])
+            else:
+                dat = pd.array([ pd.to_datetime(v) for v in col.data ])
+
+            msk = pd.array(col.mask, dtype=bool)
+            dat[~msk] = np.nan
+            
+            df[n] = dat
+
+        return df
+
+except ModuleNotFoundError:
+    sys.stderr.write("Warning: pandas not found - data framey features disabled.")
