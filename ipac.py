@@ -901,10 +901,21 @@ class BigTbl:
 
 try:
     import numpy as np
+    
 
     def arrayize_cols( tbl ):
+        type_dict = { "int": np.int32, \
+                          "long": np.int64, \
+                          "float": np.float32, \
+                          "double": np.float64, \
+                          "real": np.float64, \
+                          "char": "S", \
+                          "date": "S" }
+        
         for c in tbl.colnames:
-            tbl.cols[c].data = np.asarray(tbl.cols[c].data)
+            longtype = IPACExpandType( tbl.cols[c].type )
+            dtype = type_dict[ longtype ]
+            tbl.cols[c].data = np.asarray(tbl.cols[c].data, dtype=dtype)
             tbl.cols[c].mask = np.asarray(tbl.cols[c].mask)
 
         return None
@@ -918,19 +929,21 @@ try:
 
     
     def tbl_to_DFrame( tbl ):
-        typedict = { "i": "Int64", "int": "Int64", \
-                         "l": "Int64", "long": "Int64", \
-                         "f": "float64", "float": "float64", \
-                         "d": "float64", "double": "float64", \
-                         "r": "float64", "real": "float64", \
-                         "c": "str", "char": "str" }
+        typedict = { "int": "int32", \
+                         "long": "int64", \
+                         "float": "float32", \
+                         "double": "float64", \
+                         "real": "float64", \
+                         "char": "str" }
         df = pd.DataFrame()
         for n in tbl.colnames:
             col = tbl.cols[n]
             dat = col.data
 
             if col.type not in ( "t", "date" ):
-                dat = pd.array(col.data, dtype=typedict[col.type])
+                longtype = IPACExpandType( col.type )
+                dtype = typedict[longtype]
+                dat = pd.array(col.data, dtype=dtype)
             else:
                 dat = pd.array([ pd.to_datetime(v) for v in col.data ])
 
@@ -942,4 +955,36 @@ try:
         return df
 
 except ModuleNotFoundError:
-    sys.stderr.write("Warning: pandas not found - data framey features disabled.")
+    sys.stderr.write("Warning: pandas not found - data frame features disabled.")
+
+
+try:
+    import astropy.table as aptb
+
+    
+    def tbl_to_astropy( tbl ):
+        typedict = { "int": "i4", \
+                         "long": "i8", \
+                         "float": "f4", \
+                         "double": "f8", \
+                         "real": "f8", \
+                         "char": "S", \
+                         "date": "S" }
+
+        collist = []
+        for n in tbl.colnames:
+            col = tbl.cols[n]
+            longtype = IPACExpandType( col.type )
+            
+            m = [ not x for x in col.mask ]
+            newC = aptb.MaskedColumn( col.data, name=n, \
+                                          mask=m, dtype=typedict[longtype] )
+                                         
+            collist.append(newC)
+
+        newT = aptb.Table( collist )
+            
+        return newT
+
+except ModuleNotFoundError:
+    sys.stderr.write("Warning: astropy not found - astropy table features disabled.")
