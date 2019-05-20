@@ -297,7 +297,7 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
     if isinstance(x, np.matrix): #Convert matrices to arrays
         x = np.asarray(x)
 
-    sys.stderr.write("Warning: FormatValWithUncRounding is untested.\n")
+    #sys.stderr.write("Warning: FormatValWithUncRounding is untested.\n")
 
     #Pre-round unc to correctly handle cases where rounding alters the
     # most significant digit of unc.
@@ -340,7 +340,7 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
             s = "{:." + str(prec) + "g}"
             return (s.format(m*10.0**e), s.format(u*10**e))
     
-    return formatter( mantissa, uncOut, omag )
+    return formatter( mantissa, uncOut, omag, prec )
 
 def SetDecimalPrecision( precision ):
     if not ( type(sigfigs) is int or type(sigfigs) is long or
