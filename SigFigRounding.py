@@ -326,18 +326,18 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
 
     omagdiff = omag - uncomag
     prec = uncsigfigs - 1 + int(omagdiff)
-    
+
 
     mantissa, uncOut = ( np.around( mantissa, decimals=prec ),
                          np.around( unc * 10**(-omag), decimals=prec ) )
 
     if sciformat:
         def formatter( m, u, e, prec ):
-            s = "{:." + str(prec) + "f}e{:+d}"
+            s = "{:." + str(max(prec, 0)) + "f}e{:+d}"
             return (s.format(m, int(e)), s.format(u, int(e)))
     else:
         def formatter( m, u, e, prec ):
-            s = "{:." + str(prec) + "g}"
+            s = "{:." + str(max(prec, 0)) + "g}"
             return (s.format(m*10.0**e), s.format(u*10**e))
     
     return formatter( mantissa, uncOut, omag, prec )
