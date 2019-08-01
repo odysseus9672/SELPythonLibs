@@ -160,15 +160,17 @@ def Hypot_C3V(vec):
 
 def UVec_to_LonLat(invec):
     """Convert a unit vector to a (longitude, latitude) pair, in radians."""
-    length = Hypot_C3V(invec);
+    length = Hypot_C3V(invec)
     
-    z_norm = invec[2]/length;
+    z_norm = invec[2]/length
     
-    alpha = arctan2(invec[1], invec[0]);
-    delta = arcsin(z_norm);
+    alpha = arctan2(invec[1], invec[0])
+    delta = arcsin(z_norm)
     
-    if alpha < 0 :
-        alpha += TwoPi;
+    if alpha < finfo(type(alpha)).epsneg * TwoPi:
+        alpha += TwoPi
+    elif alpha < 0.0:
+        alpha = 0.0
     
     return [alpha, delta]
 
@@ -310,14 +312,16 @@ def PA_LonLat( coord1, coord2 ):
     a0, d0 = coord1[0:2]
     a1, d1 = coord2[0:2]
 
-    dalpha = a0 - a1
+    dalpha = a1 - a0
     cd1 = cos( d1 )
     y = cd1 * sin( dalpha )
-    x = - sin( d1 ) * cos( d0 ) + cd1 * sin( d0 ) * cos( dalpha )
+    x = sin( d1 ) * cos( d0 ) - cd1 * sin( d0 ) * cos( dalpha )
     
     angle = arctan2( y, x )
-    if angle < 0:
-        angle += 2*pi
+    if angle < finfo(type(angle)).epsneg * TwoPi:
+        angle += TwoPi
+    elif angle < 0.0:
+        angle = 0.0
         
     return angle
 
