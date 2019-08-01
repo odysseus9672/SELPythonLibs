@@ -297,7 +297,7 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
     if isinstance(x, np.matrix): #Convert matrices to arrays
         x = np.asarray(x)
 
-    sys.stderr.write("Warning: FormatValWithUncRounding is untested.\n")
+    #sys.stderr.write("Warning: FormatValWithUncRounding is untested.\n")
 
     #Pre-round unc to correctly handle cases where rounding alters the
     # most significant digit of unc.
@@ -326,21 +326,21 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
 
     omagdiff = omag - uncomag
     prec = uncsigfigs - 1 + int(omagdiff)
-    
+
 
     mantissa, uncOut = ( np.around( mantissa, decimals=prec ),
                          np.around( unc * 10**(-omag), decimals=prec ) )
 
     if sciformat:
         def formatter( m, u, e, prec ):
-            s = "{:." + str(prec) + "f}e{:+d}"
+            s = "{:." + str(max(prec, 0)) + "f}e{:+d}"
             return (s.format(m, int(e)), s.format(u, int(e)))
     else:
         def formatter( m, u, e, prec ):
-            s = "{:." + str(prec) + "g}"
+            s = "{:." + str(max(prec, 0)) + "g}"
             return (s.format(m*10.0**e), s.format(u*10**e))
     
-    return formatter( mantissa, uncOut, omag )
+    return formatter( mantissa, uncOut, omag, prec )
 
 def SetDecimalPrecision( precision ):
     if not ( type(sigfigs) is int or type(sigfigs) is long or
