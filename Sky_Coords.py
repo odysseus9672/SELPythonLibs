@@ -313,9 +313,10 @@ def PA_LonLat( coord1, coord2 ):
     a1, d1 = coord2[0:2]
 
     dalpha = a1 - a0
-    cd1 = cos( d1 )
-    y = cd1 * sin( dalpha )
-    x = sin( d1 ) * cos( d0 ) - cd1 * sin( d0 ) * cos( dalpha )
+    shda = np.sin(0.5*dalpha)
+    cd1 = cos(d1)
+    y = cd1 * sin(dalpha)
+    x = sin(d1 - d0) + 2.0 * cd1 * sin(d0) * shda * shda
     
     angle = arctan2( y, x )
     if angle < finfo(type(angle)).epsneg * TwoPi:
