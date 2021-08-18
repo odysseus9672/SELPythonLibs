@@ -74,7 +74,8 @@ class BinClassTree():
     ----------
     splitpoints : sequence, list, tuple, etc of integers
         List of integers specifying the number of leaf nodes below the left
-        branch of each inner node. Inner nodes are traversed from left to right.
+        branch of each inner node. Inner nodes are traversed starting at the 
+        root node from left to right.
 
     """
     
