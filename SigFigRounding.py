@@ -21,6 +21,12 @@ Land = np.logical_and
 Lor = np.logical_or
 Lnot = np.logical_not
 
+try:
+    i = long(4)
+    del i
+except NameError:
+    long = int
+
 
 def RoundToSigFigs_fp( x, sigfigs ):
     """
@@ -31,8 +37,8 @@ def RoundToSigFigs_fp( x, sigfigs ):
     sigfigs must be an integer type and store a positive value.
     x must be a real value or an array like object containing only real values.
     """
-    if not ( type(sigfigs) is int or type(sigfigs) is long or
-             isinstance(sigfigs, np.integer) ):
+    if not ( type(sigfigs) is int or isinstance(sigfigs, np.integer) or
+             type(sigfigs) is long ):
         raise TypeError( "RoundToSigFigs_fp: sigfigs must be an integer." )
 
     if sigfigs <= 0:
@@ -86,15 +92,15 @@ def RoundToSigFigs_decim( x, sigfigs ):
     sigfigs must be an integer type and store a positive value.
     x must be a Python Decimal value. No arrays accepted.
     """
-    if not ( type(sigfigs) is int or type(sigfigs) is long or
-             isinstance(sigfigs, np.integer) ):
+    if not ( type(sigfigs) is int or isinstance(sigfigs, np.integer) or
+             type(sigfigs) is long ):
         raise TypeError( "RoundToSigFigs_Decim: sigfigs must be an integer." )
 
     if sigfigs <= 0:
         raise ValueError( "RoundToSigFigs_Decim: sigfigs must be positive." )
     
     if not (type(x) == type(decim.Decimal(1))):
-        raise TypeError( "RoundToSigFigs_Decim: x must by a Python Decimal." )
+        raise TypeError( "RoundToSigFigs_Decim: x must be a Python Decimal." )
 
     xsgn = decim.Decimal(1).copy_sign(x)
     absx = x * xsgn
@@ -137,8 +143,8 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     - uncs must be a real value or an array like object containing only real
       values.
     """
-    if not ( type(uncsigfigs) is int or type(uncsigfigs) is long or
-             isinstance(uncsigfigs, np.integer) ):
+    if not ( type(uncsigfigs) is int or isinstance(uncsigfigs, np.integer) or
+             type(uncsigfigs) is long ):
         raise TypeError(
             "ValueWithUncsRounding: uncsigfigs must be an integer." )
 
@@ -277,8 +283,8 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
     - x must be a real value or floating point.
     - unc must be a real value or floating point
     """
-    if not ( type(uncsigfigs) is int or type(uncsigfigs) is long or
-             isinstance(uncsigfigs, np.integer) ):
+    if not ( type(uncsigfigs) is int or isinstance(uncsigfigs, np.integer) or
+             type(uncsigfigs) is long ):
         raise TypeError(
             "FormatValWithUncRounding: uncsigfigs must be an integer." )
 
@@ -343,12 +349,12 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
     return formatter( mantissa, uncOut, omag, prec )
 
 def SetDecimalPrecision( precision ):
-    if not ( type(sigfigs) is int or type(sigfigs) is long or
-             isinstance(sigfigs, np.integer) ):
-        raise TypeError( "SetDecimalPrecision: prec must be an integer." )
+    if not ( type(precision) is int or isinstance(precision, np.integer) or
+             type(precision) is long ):
+        raise TypeError( "SetDecimalPrecision: precision must be an integer." )
 
     if precision < 0:
-        raise ValueError( "SetDecimalPrecision: prec cannot be negative." )
+        raise ValueError( "SetDecimalPrecision: precision cannot be negative." )
 
     global __context
     __context.prec = precision
