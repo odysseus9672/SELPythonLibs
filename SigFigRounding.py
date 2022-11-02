@@ -21,24 +21,29 @@ Land = np.logical_and
 Lor = np.logical_or
 Lnot = np.logical_not
 
+integertypes = [int, np.integer]
 try:
-    i = long(4)
-    del i
+    integertypes.append(long)
 except NameError:
-    long = int
+    pass
+
+integertypes = tuple(integertypes)
+
+
 
 
 def RoundToSigFigs_fp( x, sigfigs ):
     """
     Rounds the value(s) in x to the number of significant figures in sigfigs.
-    Return value has the same type as x.
+    Return value has the same type as x. This function relies on floating
+    point arithmetic, so it is not guaranteed to be exact in all cases, but it
+    is fast.
 
     Restrictions:
     sigfigs must be an integer type and store a positive value.
     x must be a real value or an array like object containing only real values.
     """
-    if not ( type(sigfigs) is int or isinstance(sigfigs, np.integer) or
-             type(sigfigs) is long ):
+    if not isinstance(sigfigs, integertypes):
         raise TypeError( "RoundToSigFigs_fp: sigfigs must be an integer." )
 
     if sigfigs <= 0:
@@ -65,7 +70,7 @@ def RoundToSigFigs_fp( x, sigfigs ):
 
     mantissas *= 10.0**(decimalExponents - omags)
     
-    if type(mantissas) is float or isinstance(mantissas, np.floating):
+    if isinstance(mantissas, (float, np.floating)):
         if mantissas < 1.0:
             mantissas *= 10.0
             omags -= 1.0
@@ -87,19 +92,19 @@ def RoundToSigFigs_decim( x, sigfigs ):
     """
     Rounds the value(s) in x to the number of significant figures in sigfigs.
     Uses logarithm function and Python's Decimal library, so will be slower.
+    This implimentation is as exact as Python can make it.
 
     Restrictions:
     sigfigs must be an integer type and store a positive value.
     x must be a Python Decimal value. No arrays accepted.
     """
-    if not ( type(sigfigs) is int or isinstance(sigfigs, np.integer) or
-             type(sigfigs) is long ):
+    if not isinstance(sigfigs, integertypes):
         raise TypeError( "RoundToSigFigs_Decim: sigfigs must be an integer." )
 
     if sigfigs <= 0:
         raise ValueError( "RoundToSigFigs_Decim: sigfigs must be positive." )
     
-    if not (type(x) == type(decim.Decimal(1))):
+    if not isinstance(x, decim.Decimal):
         raise TypeError( "RoundToSigFigs_Decim: x must be a Python Decimal." )
 
     xsgn = decim.Decimal(1).copy_sign(x)
@@ -143,8 +148,7 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     - uncs must be a real value or an array like object containing only real
       values.
     """
-    if not ( type(uncsigfigs) is int or isinstance(uncsigfigs, np.integer) or
-             type(uncsigfigs) is long ):
+    if not isinstance(uncsigfigs, integertypes):
         raise TypeError(
             "ValueWithUncsRounding: uncsigfigs must be an integer." )
 
@@ -183,7 +187,7 @@ def ValueWithUncsRounding( x, uncs, uncsigfigs=1 ):
     omags = np.floor(decimalExponents)
 
     mantissas *= 10.0**(decimalExponents - omags)
-    if type(mantissas) is float or np.issctype(np.dtype(mantissas)):
+    if isinstance(mantissas, float) or np.issctype(np.dtype(mantissas)):
         if mantissas < 1.0:
             mantissas *= 10.0
             omags -= 1.0
@@ -219,7 +223,7 @@ def FormatValToSigFigs( x, sigfigs, sciformat=True ):
     sigfigs must be an integer type and store a positive value.
     x must be a real value or an array like object containing only real values.
     """
-    if not ( type(sigfigs) is int or np.issubdtype(sigfigs, np.integer) ):
+    if not isinstance(sigfigs, integertypes):
         raise TypeError(
             "FormatValToSigFigs: sigfigs must be an integer." )
 
@@ -283,8 +287,7 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
     - x must be a real value or floating point.
     - unc must be a real value or floating point
     """
-    if not ( type(uncsigfigs) is int or isinstance(uncsigfigs, np.integer) or
-             type(uncsigfigs) is long ):
+    if not isinstance(uncsigfigs, integertypes):
         raise TypeError(
             "FormatValWithUncRounding: uncsigfigs must be an integer." )
 
@@ -349,8 +352,7 @@ def FormatValWithUncRounding( x, unc, uncsigfigs=1, sciformat=True ):
     return formatter( mantissa, uncOut, omag, prec )
 
 def SetDecimalPrecision( precision ):
-    if not ( type(precision) is int or isinstance(precision, np.integer) or
-             type(precision) is long ):
+    if not isinstance(precision, integertypes):
         raise TypeError( "SetDecimalPrecision: precision must be an integer." )
 
     if precision < 0:
@@ -367,68 +369,123 @@ def SetDecimalPrecision( precision ):
     return None
 
 
-# __testsigfigs = (1, 3, 6)
-# __finfo = np.finfo(float)
-# __testnums = [  0.0, -1.2366e22, 1.2544444e-15, 0.001222, 0.0,
-#                 float("nan"), float("inf"), float.fromhex("0x4.23p-1028"),
-#                 0.5555, 1.5444, 1.72340, 1.256e-15, 10.5555555,
-#                 __finfo.max, __finfo.min,
-#                 0.5555, 0.5555*(1.0 + __finfo.eps), 0.5555*(1.0 - __finfo.epsneg) ]
-# __testres = {1: [ 0.0, -1e22, 1e-15, 1e-3, 0.0,
-#                   float("nan"), float("inf"), 1e-309,
-#                   0.6, 2.0, 2.0, 1.0e-15, 10.0,
-#                   float("inf"), -float("inf"),
-#                   0.6, 0.6, 0.6 ],
-#              3: [ 0.0, -1.24e22, 1.25e-15, 1.22e-3, 0.0,
-#                   float("nan"), float("inf"), 1.44e-309,
-#                   5.56e-1, 1.54, 1.72, 1.26e-15, 10.6,
-#                   float("inf"), -float("inf"),
-#                   0.556, 0.556, 0.555 ],
-#              6: [ 0.0, -1.2366e22, 1.25444e-15, 0.001222, 0.0,
-#                 float("nan"), float("inf"), 1.43820e-309,
-#                 0.5555, 1.5444, 1.72340, 1.256e-15, 10.5556,
-#                 1.79769e+308, -1.79769e+308,
-#                 0.5555, 0.5555, 0.5555 ] }
+if __name__ == "__main__":
+    # Test cases to ensure the functions are executing correctly. The
+    # decimal and floating point tests are separated because 0.5555 rounded
+    # to three significant figures is a particularly sharp corner case.
+    # The floating point storage of this number is actually less than
+    # 0.5555, so it should round down to 0.555. This sort of inexact
+    # representation of decimal numbers is inherent to floating point numbers,
+    # so the fact that in this case the floating point algorithm is accidentally
+    # producing more correct results than floating point arithmetic says it
+    # should will not be regarded as a bug.
+    __testsigfigs = (1, 3, 6)
+    __finfo = np.finfo(float)
+    # Floating point test values
+    __testnumsf = [0.0, -1.2366e22, 1.2544444e-15, 0.001222, 0.0,
+                   float("nan"), float("inf"), float.fromhex("0x4.23p-1028"),
+                   0.5555, 1.5444, 1.72340, 1.256e-15, 10.5555555,
+                   __finfo.max, __finfo.min,
+                   0.5555, 0.5555*(1.0 + __finfo.eps),
+                   0.5555*(1.0 - __finfo.epsneg)]
+    # Floating point standard results
+    __testresf = {1: [ 0.0, -1e22, 1e-15, 1e-3, 0.0,
+                       np.nan, np.inf, 1e-309,
+                       0.6, 2.0, 2.0, 1.0e-15, 10.0,
+                       np.inf, -np.inf,
+                       0.6, 0.6,
+                       0.6 ],
+                  3: [ 0.0, -1.24e22, 1.25e-15, 1.22e-3, 0.0,
+                       np.nan, np.inf, 1.44e-309,
+                       5.56e-1, 1.54, 1.72, 1.26e-15, 10.6,
+                       np.inf, -np.inf,
+                       0.556, 0.556,
+                       0.555 ],
+                  6: [ 0.0, -1.2366e22, 1.25444e-15, 0.001222, 0.0,
+                       np.nan, np.inf, 1.43820e-309,
+                       0.5555, 1.5444, 1.72340, 1.256e-15, 10.5556,
+                       1.79769e+308, -1.79769e+308,
+                       0.5555, 0.5555,
+                       0.5555 ] }
 
-# def TestFuncs():
-#     finfo = np.finfo(float)
-#     if finfo.bits != 64 or finfo.nexp != 11 or finfo.nmant != 52:
-#         raise RuntimeError("Test only implemented for 64 bit floats.")
+    # Decimal test values
+    __testnumsd = [decim.Decimal(x) for x in [
+        "0.0", "-1.2366e22", "1.2544444e-15", "0.001222", "0.0",
+        "nan", "inf", (decim.Decimal(4)
+                       + decim.Decimal(2)/16
+                       + decim.Decimal(3)/16**2) / 2**1028,
+        "0.5555", "1.5444", "1.72340", "1.256e-15", "10.5555555",
+        "1.7976931348623157e+308", "-1.7976931348623157e+308",
+        "0.5555", "0.5555000000000001",
+        "0.5554999999999999"]]
 
-#     testarr = np.array(__testnums)
+    # Decimal standard results
+    __testresd = {1: [ "0.0", "-1e22", "1e-15", "1e-3", "0.0",
+                       "nan", "inf", "1e-309",
+                       "0.6", "2.0", "2.0", "1.0e-15", "10.0",
+                       "inf", "-inf",
+                       "0.6", "0.6",
+                       "0.6" ],
+                  3: [ "0.0", "-1.24e22", "1.25e-15", "1.22e-3", "0.0",
+                       "nan", "inf", "1.44e-309",
+                       "5.56e-1", "1.54", "1.72", "1.26e-15", "10.6",
+                       "inf", "-inf",
+                       "0.556", "0.556",
+                       "0.555" ],
+                  6: [ "0.0", "-1.2366e22", "1.25444e-15", "0.001222", "0.0",
+                       "nan", "inf", "1.43820e-309",
+                       "0.5555", "1.5444", "1.72340", "1.256e-15", "10.5556",
+                       "1.79769e+308", "-1.79769e+308",
+                       "0.5555", "0.5555",
+                       "0.5555" ] }
+
+    def TestFuncs():
+        finfo = np.finfo(float)
+        if finfo.bits != 64 or finfo.nexp != 11 or finfo.nmant != 52:
+            raise RuntimeError("Test only implemented for 64 bit floats.")
+
+        testarr = np.array(__testnumsf)
     
-#     for sf in __testsigfigs:
-#         out = RoundToSigFigs_fp( testarr, sf )
+        for sf in __testsigfigs:
+            out = RoundToSigFigs_fp( testarr, sf )
+            
+            standard = np.array([ float(s) for s in __testresf[sf] ])
+            infmsk = np.isinf(standard)
+            nanmsk = np.isnan(standard)
+            normmsk = Lnot(Lor( infmsk, nanmsk ))
         
-#         standard = np.array(__testres[sf])
-#         infmsk = np.isinf(standard)
-#         nanmsk = np.isnan(standard)
-#         normmsk = Lnot(Lor( infmsk, nanmsk ))
-        
-#         absdiff = np.abs( out[normmsk] - standard[normmsk] )
+            absdiff = np.abs( out[normmsk] - standard[normmsk] )
 
-#         if ( np.any(absdiff > 16.0 * __finfo.eps) or
-#              np.any(out[infmsk] != standard[infmsk]) or
-#              np.any(Lnot(np.isnan( out[nanmsk] ))) ):
-#             raise RuntimeError(
-#                 "RoundToSigFigs_fp test failed at sigfigs={:d}".format(sf) )
+            if ( np.any(absdiff > 16.0 * __finfo.eps * np.abs(standard[normmsk])) or
+                 np.any(out[infmsk] != standard[infmsk]) or
+                 np.any(Lnot(np.isnan( out[nanmsk] ))) ):
+                raise RuntimeError(
+                    "RoundToSigFigs_fp test failed at sigfigs={:d}".format(sf) )
 
-#         out = np.asarray([ float(RoundToSigFigs_decim( decim.Decimal(x), sf ))
-#                            for x in testarr ])
-        
-#         standard = np.array(__testres[sf])
-#         infmsk = np.isinf(standard)
-#         nanmsk = np.isnan(standard)
-#         normmsk = Lnot(Lor( infmsk, nanmsk ))
-        
-#         absdiff = np.abs( out[normmsk] - standard[normmsk] )
+            def cmp(x, y):
+                av = (x + y)/2
+                fx, fy = [ float(v) for v in (x, y) ]
+                if np.isinf(fx) and np.isinf(fy) and (
+                        (fx > 0 and fy > 0) or (fx < 0 and fy < 0)):
+                    result = True
+                elif np.isnan(fx) and np.isnan(fy):
+                    result = True
+                elif abs(x - y) <= 16 * decim.Decimal(__finfo.eps) * abs(av):
+                    result = True
+                else:
+                    result = False
 
-#         if ( np.any(absdiff > 16.0 * __finfo.eps) or
-#              np.any(out[infmsk] != standard[infmsk]) or
-#              np.any(Lnot(np.isnan( out[nanmsk] ))) ):
-#             print(absdiff > 16.0 * __finfo.eps)
-#             print(absdiff)
-#             raise RuntimeError(
-#                 "RoundToSigFigs_decim test failed at sigfigs={:d}".format(sf) )
+                return result
+            
+            out = [ RoundToSigFigs_decim( decim.Decimal(x), sf )
+                    for x in __testnumsd ]
+            standard = [ decim.Decimal(x) for x in __testresd[sf] ]
+            msk = [ cmp(*v) for v in zip(out, standard) ]
+            if not np.all(msk):
+                raise RuntimeError(
+                    "RoundToSigFigs_decim test failed at sigfigs={:d}".format(sf) )
 
-#     return None
+        return None
+
+    TestFuncs()
+    
