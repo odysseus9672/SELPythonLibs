@@ -25,6 +25,8 @@ skycellformat = re.compile("^\d{4}\.0\d{2}$")
 filenameregex = re.compile("skycell\.\d{4}\.0\d{2}\.")
 
 
+# The file ps1grid.fits comes from the PanStarrs team. It was downloaded from:
+# https://outerspace.stsci.edu/download/attachments/10257181/ps1grid.fits?version=3&modificationDate=1532367528459&api=v2
 __PS1SkycellCache = os.path.join(os.path.split(__file__)[0], "ps1grid.fits")
 
 with pf.open(__PS1SkycellCache) as ff:
