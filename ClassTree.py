@@ -108,16 +108,16 @@ class BinClassTree():
 
             childsplits = splitpoints[1:]
             if Nleft == 1:
-                self.children = (None, ClassTree(childsplits))
+                self.children = (None, BinClassTree(childsplits))
                 
             elif Nright == 1:
-                self.children = (ClassTree(childsplits), None)
+                self.children = (BinClassTree(childsplits), None)
                 
             else:
                 csp = sp - 1
 
-                self.children = (ClassTree(childsplits[:csp]),
-                                 ClassTree(childsplits[csp:]))
+                self.children = (BinClassTree(childsplits[:csp]),
+                                 BinClassTree(childsplits[csp:]))
         else:
             raise ValueError("length fo splitpoints insufficient")
 
@@ -231,4 +231,4 @@ class BinClassTree():
 
 # Example code:
 # SplitHierarchy = (1, 1, 1, 1)
-# translator = ClassTree(SplitHierarchy)
+# translator = BinClassTree(SplitHierarchy)
